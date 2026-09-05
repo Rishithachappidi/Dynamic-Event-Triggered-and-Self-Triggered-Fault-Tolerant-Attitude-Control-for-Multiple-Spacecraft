@@ -5,9 +5,7 @@
 [![MATLAB](https://img.shields.io/badge/MATLAB-Simulink-orange)](#matlabsimulink-simulation)
 [![Website](https://img.shields.io/badge/Website-GitHub%20Pages-blue)](#interactive-visualization)
 
-> **Project status:** academic reproduction / visualization. The control strategies are based on the reference IEEE paper by Xie, Sheng, and Chen (2024); this repository does not claim the algorithms as original contributions.
-
----
+> **Project status:** academic reproduction / visualization. The control strategies are based on the reference IEEE paper by Xie, Sheng, and Chen (2024); 
 
 ## Project idea
 
