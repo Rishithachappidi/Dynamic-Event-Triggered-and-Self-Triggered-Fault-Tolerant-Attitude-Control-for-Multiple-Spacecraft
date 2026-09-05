@@ -1,0 +1,17 @@
+# MATLAB / Simulink generated files
+**/slprj/
+*.slxc
+*.autosave
+*.asv
+*.m~
+*.slx.r20*
+
+# OS / editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Keep the local IEEE reference paper in the project folder, but do not
+# publish it to a public GitHub repository unless redistribution is permitted.
+/reference/IEEE_REFERENCE_PAPER.pdf
