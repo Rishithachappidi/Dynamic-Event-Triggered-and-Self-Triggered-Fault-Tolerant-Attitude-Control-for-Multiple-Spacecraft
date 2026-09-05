@@ -1,161 +1,233 @@
-# Satellite Attitude Control 
+# Dynamic Event-Triggered and Self-Triggered Fault-Tolerant Attitude Control for Multiple Spacecraft
 
-**Interactive visualization and MATLAB/Simulink reproduction of dynamic event-triggered and self-triggered fault-tolerant attitude control for a four-spacecraft formation.**
+## Overview
 
-[![MATLAB](https://img.shields.io/badge/MATLAB-Simulink-orange)](#matlabsimulink-simulation)
-[![Website](https://img.shields.io/badge/Website-GitHub%20Pages-blue)](#interactive-visualization)
+This project implements a **four-spacecraft attitude control system** using MATLAB and Simulink.
 
-> **Project status:** academic reproduction / visualization. The control strategies are based on the reference IEEE paper by Xie, Sheng, and Chen (2024); 
+The aim is to coordinate the attitude and angular velocity of four spacecraft while considering actuator faults, input saturation, disturbances, and limited communication between spacecraft.
 
-## Project idea
+The project includes three control strategies:
 
-The project visualizes how four spacecraft that begin with different attitudes and angular velocities can coordinate their attitude motion while reducing unnecessary communication and computation.
+- Time-Driven Control
+- Dynamic Event-Triggered Control
+- Self-Triggered Control
 
-The control loop represented in the project is:
+Along with the MATLAB/Simulink implementation, an interactive web visualization is included to show how the four spacecraft behave during the simulation.
+
+---
+
+## What We Implemented
+
+The system contains four spacecraft with different:
+
+- Initial attitudes
+- Initial angular velocities
+- Inertia matrices
+- Actuator effectiveness values
+
+The spacecraft exchange information through a directed communication network.
+
+During the simulation, each spacecraft calculates its coordination error using its own state, its neighboring spacecraft states, and the desired reference state.
+
+The main coordination variable is
+
+\[
+s_i = e_{2i} + r e_{1i}
+\]
+
+where:
+
+- \(e_{1i}\) represents the attitude coordination error
+- \(e_{2i}\) represents the angular velocity coordination error
+
+The controller uses this error to generate the required control torque.
+
+The spacecraft dynamics also include:
+
+- Actuator effectiveness loss
+- Input saturation
+- External disturbances
+- Drift torque
+
+The maximum actuator torque used in the simulation is:
+
+\[
+u_{max}=0.2\;N\cdot m
+\]
+
+---
+
+## Control Cases
+
+### Case 1 — Time-Driven Control
+
+The controller updates at a fixed frequency of **10 Hz**.
+
+This means the control input is recalculated every **0.1 seconds**.
+
+---
+
+### Case 2 — Dynamic Event-Triggered Control
+
+The controller is updated only when the event-trigger condition is satisfied.
+
+Instead of communicating continuously, each spacecraft sends new state information only when an update is required.
+
+This helps reduce unnecessary communication between the spacecraft.
+
+The event-trigger condition is based on the difference between the stored coordination state and the current coordination state.
+
+---
+
+### Case 3 — Self-Triggered Control
+
+The self-triggered controller calculates the next controller update time in advance.
+
+Instead of continuously checking the event condition, the spacecraft determines when the next update should occur and waits until that time.
+
+This reduces continuous trigger-condition checking.
+
+---
+
+## Simulation Flow
+
+The overall system works as follows:
 
 ```text
-Different spacecraft states σᵢ, ωᵢ
-              ↓
-Neighbor / reference comparison
-              ↓
-Formation errors e₁ᵢ and e₂ᵢ
-              ↓
-sᵢ = e₂ᵢ + r e₁ᵢ
-              ↓
-Trigger decision
-              ↓
-Fault-tolerant controller uᵢ
-              ↓
-Input saturation + actuator effectiveness
-              ↓
-Spacecraft rotational dynamics
-              ↓
-New σᵢ, ωᵢ
-              ↺
+Initial spacecraft states
+        ↓
+Desired attitude and angular velocity
+        ↓
+Neighbor spacecraft information
+        ↓
+Calculate attitude error
+        ↓
+Calculate angular velocity error
+        ↓
+Calculate coordination variable s
+        ↓
+Controller / Trigger mechanism
+        ↓
+Calculate control input
+        ↓
+Apply actuator saturation
+        ↓
+Apply actuator effectiveness
+        ↓
+Add disturbances and drift torque
+        ↓
+Spacecraft dynamics
+        ↓
+Updated attitude and angular velocity
+        ↓
+Repeat
 ```
 
-The desired behavior is that the attitude and angular-velocity errors become small while communication is performed according to the selected triggering strategy.
+As the simulation progresses, the attitude error, angular velocity error, and coordination error decrease and the four spacecraft move toward coordinated attitude behavior.
 
 ---
 
-## Three control cases
+## MATLAB / Simulink Files
 
-### Case 1 — Time-driven control
-The controller is updated on a fixed time schedule (10 Hz in the simulation setup).
+The main implementation is available inside the `simulation/` folder.
 
-### Case 2 — Dynamic event-triggered control
-The controller/state broadcast occurs only when the event-trigger condition is satisfied. This demonstrates how communication can be reduced compared with fixed periodic updates.
+### `sff_params.m`
 
-### Case 3 — Self-triggered control
-The next update time is predicted from information available at the current trigger. This removes the need to continuously monitor the event condition.
+Contains the simulation parameters, communication matrices, controller parameters, inertia matrices, actuator effectiveness matrices, initial conditions, and simulation settings.
+
+### `sff_x0.m`
+
+Creates the initial state vector for all four spacecraft.
+
+### `sff_ref.m`
+
+Generates the desired attitude and desired angular velocity.
+
+### `sff_plant_core.m`
+
+Implements the spacecraft attitude and angular velocity dynamics, including actuator faults, disturbances, drift torque, and control input.
+
+### `sff_controller_core.m`
+
+Implements all three controller cases:
+
+- Time-Driven Control
+- Dynamic Event-Triggered Control
+- Self-Triggered Control
+
+It also handles controller updates, stored states, triggering logic, and communication between spacecraft.
+
+### `sff_build_model.m`
+
+Creates and configures the Simulink model.
+
+### `sff_ets_model.slx`
+
+Main Simulink model used for the project.
+
+### `sff_run_all.m`
+
+Runs all three control cases and generates the simulation output plots.
 
 ---
 
-## Interactive visualization
+## Interactive Visualization
 
-The public website is the root file [`index.html`](index.html). It is intentionally a **visual explanation of how the control system works**, rather than an attempt to reproduce every numerical sample from MATLAB inside the browser.
+The project also includes an interactive visualization through:
+
+```text
+index.html
+```
 
 The visualization shows:
 
-- four spacecraft at different schematic formation positions;
-- different initial attitude states and angular velocities;
-- spacecraft body-axis rotation from the attitude state;
-- directed communication links;
-- trigger broadcasts;
-- live attitude/angular-velocity errors;
-- the coordination variable `s`;
-- controller torque and saturation;
-- disturbance and actuator-effectiveness effects;
-- Case 1, Case 2, and Case 3 behavior;
-- live convergence and trigger plots.
+- Four spacecraft
+- Different initial orientations
+- Different angular velocities
+- Communication links
+- Desired reference state
+- Attitude error
+- Angular velocity error
+- Coordination variable \(s_i\)
+- Trigger events
+- Controller updates
+- Control input
+- Saturated control input
+- Live error plots
+- Trigger timeline
 
-### Important visualization note
-
-The reference paper models **attitude and angular velocity**, not translational/orbital position. Therefore, the spacecraft locations in the web scene are schematic positions chosen to make the four-spacecraft communication network understandable. Their attitude/orientation behavior is what represents the control problem.
-
-To preview locally, double-click `index.html` or open it in a modern browser.
-
----
-
-## MATLAB/Simulink simulation
-
-All relevant source files are in [`simulation/`](simulation/).
-
-| File | Purpose |
-|---|---|
-| `sff_params.m` | Paper parameters, topology, gains, inertia, actuator effectiveness, initial conditions, simulation settings |
-| `sff_x0.m` | Packs the four spacecraft initial states into the 24-state Simulink vector |
-| `sff_ref.m` | Desired attitude trajectory and desired angular velocity |
-| `sff_controller_core.m` | Time-driven, dynamic event-triggered, and self-triggered control logic |
-| `sff_plant_core.m` | Nonlinear spacecraft attitude/rotational dynamics, disturbances and actuator effectiveness |
-| `sff_build_model.m` | Programmatically constructs the Simulink model |
-| `sff_ets_model.slx` | Simulink block-diagram model |
-| `sff_run_all.m` | Runs all three cases, creates figures, and prints comparison tables |
-
-### Run the simulation
-
-1. Open MATLAB.
-2. Set the current folder to `simulation/`.
-3. Run:
-
-```matlab
-R = sff_run_all;
-```
-
-To force a rebuild of the Simulink model:
-
-```matlab
-R = sff_run_all(true);
-```
-
-Generated figures are saved automatically to the repository-level [`output_images/`](output_images/) folder.
-
-### Software required
-
-- MATLAB
-- Simulink
-
-The repository does not require Python or Node.js for the simulation or the static web visualization.
+The user can switch between all three controller cases and observe how the system behavior changes.
 
 ---
 
-## Output images
+## Output Images
 
-All reproduced output figures are kept **only in one dedicated folder**:
+All generated simulation figures are stored separately inside:
 
 ```text
 output_images/
-├── Fig02.png
-├── Fig03.png
-├── Fig04.png
-├── Fig05.png
-├── Fig06.png
-├── Fig07.png
-├── Fig08.png
-├── Fig09.png
-├── Fig10.png
-├── Fig11.png
-├── Fig12.png
-├── Fig13.png
-├── Fig14.png
-└── Fig15.png
 ```
 
-These files came from the supplied `SFF_EventTriggered_Simulink` project. Running `sff_run_all.m` will write new generated figures back into this same folder.
+The folder contains the output plots generated from the MATLAB/Simulink simulations, including:
+
+- Attitude errors
+- Angular velocity errors
+- Control inputs
+- Saturated control inputs
+- Triggering instants
 
 ---
 
-## Repository structure
+## Project Structure
 
 ```text
-SFF_Control_Lab_GitHub_Ready/
+.
+├── README.md
+├── index.html
+├── .gitignore
+├── .nojekyll
 │
-├── index.html                       # GitHub Pages visualization
-├── README.md                        # Main project documentation
-├── .gitignore                       # MATLAB/Simulink cache exclusions
-├── .nojekyll                        # Simple GitHub Pages publishing
-│
-├── simulation/                      # MATLAB + Simulink implementation
+├── simulation/
 │   ├── sff_build_model.m
 │   ├── sff_controller_core.m
 │   ├── sff_ets_model.slx
@@ -165,57 +237,84 @@ SFF_Control_Lab_GitHub_Ready/
 │   ├── sff_run_all.m
 │   └── sff_x0.m
 │
-├── output_images/                   # ALL project output figures
+├── output_images/
 │   ├── Fig02.png
-│   ├── ...
+│   ├── Fig03.png
+│   ├── Fig04.png
+│   ├── Fig05.png
+│   ├── Fig06.png
+│   ├── Fig07.png
+│   ├── Fig08.png
+│   ├── Fig09.png
+│   ├── Fig10.png
+│   ├── Fig11.png
+│   ├── Fig12.png
+│   ├── Fig13.png
+│   ├── Fig14.png
 │   └── Fig15.png
 │
 ├── reference/
-│   ├── IEEE_REFERENCE_PAPER.pdf     # Local reference copy; ignored by git by default
-│   └── REFERENCE.md                 # Citation and publication note
-│
 └── docs/
-    ├── MATHEMATICAL_WORKFLOW.md
-    ├── GITHUB_PAGES_SETUP.md
-    ├── PUBLIC_RELEASE_CHECKLIST.md
-    └── website_preview.png
 ```
 
-Generated Simulink cache folders (`slprj/`) and `.slxc` files are intentionally not included because they are build artifacts and should not be committed to GitHub.
-
 ---
 
-## Reference paper
+## Running the Project
 
-The project is based on:
+Open MATLAB and navigate to the `simulation` folder.
 
-**X. Xie, T. Sheng, and X. Chen**, “Dynamic Event-Triggered and Self-Triggered Fault-Tolerant Attitude Control for Multiple Spacecraft Systems With Uncertainties and Input Saturation,” *IEEE Transactions on Aerospace and Electronic Systems*, vol. 60, no. 3, 2024. DOI: **10.1109/TAES.2024.3355381**.
+Run:
 
-See [`reference/REFERENCE.md`](reference/REFERENCE.md) for the citation and a note about the local PDF.
+```matlab
+sff_params
+```
 
----
+If the Simulink model needs to be generated, run:
 
-## Publish the visualization with GitHub Pages
+```matlab
+sff_build_model
+```
 
-After pushing the repository to GitHub:
+Then run all simulation cases using:
 
-1. Open the repository on GitHub.
-2. Go to **Settings → Pages**.
-3. Under **Build and deployment**, choose **Deploy from a branch**.
-4. Select the `main` branch and `/ (root)` folder.
-5. Save.
-6. GitHub will provide a public URL similar to:
+```matlab
+sff_run_all
+```
+
+The generated figures are stored in:
 
 ```text
-https://USERNAME.github.io/REPOSITORY-NAME/
+output_images/
 ```
 
-Full steps are in [`docs/GITHUB_PAGES_SETUP.md`](docs/GITHUB_PAGES_SETUP.md).
+To open the interactive visualization, open:
+
+```text
+index.html
+```
+
+in a web browser.
 
 ---
 
-## Academic-use note
+## Project Outcome
 
-This repository is organized as a reproducible academic project and visualization. When presenting it, describe it as a **reproduction / implementation / visualization of the reference work** rather than as the original invention of the control strategy.
+The project demonstrates how four spacecraft with different initial attitudes and angular velocities can achieve coordinated attitude behavior using distributed control.
 
-The browser visualization focuses on explaining the mechanism. MATLAB/Simulink remains the project implementation used for the simulation figures.
+The main comparison is between:
+
+- Fixed periodic controller updates
+- Event-based controller updates
+- Predicted self-triggered controller updates
+
+The visualization helps show how spacecraft errors decrease, how communication takes place between spacecraft, and how different triggering strategies affect controller updates.
+
+---
+
+## Reference
+
+X. Xie, T. Sheng, and X. Chen,  
+**“Dynamic Event-Triggered and Self-Triggered Fault-Tolerant Attitude Control for Multiple Spacecraft Systems With Uncertainties and Input Saturation,”**  
+IEEE Transactions on Aerospace and Electronic Systems, 2024.
+
+DOI: `10.1109/TAES.2024.3355381`
