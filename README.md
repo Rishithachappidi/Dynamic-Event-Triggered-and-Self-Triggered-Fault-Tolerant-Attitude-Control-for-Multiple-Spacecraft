@@ -1,4 +1,4 @@
-# SFF Control Lab
+# Satellite Attitude Control 
 
 **Interactive visualization and MATLAB/Simulink reproduction of dynamic event-triggered and self-triggered fault-tolerant attitude control for a four-spacecraft formation.**
 
